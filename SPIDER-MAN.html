@@ -208,7 +208,7 @@ function wxPost(dt){const t=WX.t,c=WX.c,k=1-Math.exp(-2.2*dt);
  snowP.visible=c.snow>.03;snowP.material.opacity=Math.min(.9,c.snow);
  if(snowP.visible){WX.ts+=dt;for(let i=0;i<SNN;i++){wrapO(snV,i*3,px,py,pz,3.2*dt);snP[i*3]=p.x+snV[i*3]+Math.sin(WX.ts*.8+i)*.4;snP[i*3+1]=p.y+snV[i*3+1];snP[i*3+2]=p.z+snV[i*3+2]}sng.attributes.position.needsUpdate=true}
  for(let i=0;i<STN;i++){const o=stO[i];o.y+=2.2*dt;if(o.y>10)o.y=0;stP[i*3]=o.x+Math.sin(o.s+o.y*.5)*.8;stP[i*3+1]=.3+o.y;stP[i*3+2]=o.z}stG.attributes.position.needsUpdate=true}
-function setWx(i){const t=WXP[i];if(!t)return;WX.t=t;hour=t.h;tspd=i==0?1:0;document.querySelectorAll('.wxo').forEach((b,j)=>b.classList.toggle('on',j==i));$('wxB').textContent=t.e+(isMob()?'':' '+t.n.toUpperCase());toast(t.e+' '+t.n);$('wxP').style.display='none'}
+function setWx(i){const t=WXP[i];if(!t)return;WX.t=t;hour=t.h;tspd=i==0?1:0;document.querySelectorAll('.wxo').forEach((b,j)=>b.classList.toggle('on',j==i));$('wxB').textContent=t.e+(isMob()?'':' '+t.n.toUpperCase());toast(t.e+' '+t.n);$('wxP').style.display='none';if(mode=='play'&&t.q)hsay(pick(t.q),2600)}
 {const w=document.createElement('div');w.className='wxc';w.innerHTML='<h3>WEATHER</h3>';WXP.forEach((t,i)=>{const b=document.createElement('button');b.className='wxo'+(i?'':' on');b.textContent=t.e+' '+t.n+'  ['+(i+1)+']';b.onclick=e=>{e.stopPropagation();setWx(i)};w.appendChild(b)});$('wxP').appendChild(w);
  $('wxB').onclick=e=>{e.stopPropagation();$('wxP').style.display='flex'};$('wxP').onclick=e=>{if(e.target==$('wxP'))$('wxP').style.display='none'}}
 let zip=null,zipCD=0;
@@ -240,14 +240,30 @@ const wvT=new T.CanvasTexture(wvC);wvT.wrapS=wvT.wrapT=T.RepeatWrapping;wvT.repe
 const boats=[],helis=[];
 for(let i=0;i<3;i++){const g=new T.Group(),h2=new T.Mesh(new T.BoxGeometry(2.4,1,7),new T.MeshLambertMaterial({color:[0xeeeeee,0xd04040,0x305080][i]})),c2=new T.Mesh(new T.BoxGeometry(1.8,1.2,2.6),new T.MeshLambertMaterial({color:0xf5f5f5}));h2.position.y=.6;c2.position.set(0,1.7,-.5);g.add(h2,c2);S.add(g);boats.push({g,z:40+Math.random()*250,dir:i%2?1:-1,x:[45,84,64][i],zmax:i==2?330:420,sp:3+Math.random()*3})}
 for(let i=0;i<3;i++){const g=new T.Group(),mt=new T.MeshLambertMaterial({color:[0x2a3b55,0x992222,0x444444][i]}),b=new T.Mesh(new T.SphereGeometry(2,8,6),mt),tl=new T.Mesh(new T.BoxGeometry(.4,.4,5),mt),ro=new T.Mesh(new T.BoxGeometry(11,.12,.5),new T.MeshLambertMaterial({color:0x111111}));b.scale.set(1,.8,1.6);tl.position.z=-4.5;ro.position.y=1.8;g.add(b,tl,ro);S.add(g);helis.push({g,ro,a:Math.random()*6.28,r:90+i*55,y:115+i*18,sp:.12+i*.03})}
-function extras(dt){wvT.offset.y+=dt*.03;for(const o of boats){o.z+=o.dir*o.sp*dt;if(o.z>o.zmax)o.dir=-1;if(o.z<30)o.dir=1;o.g.position.set(o.x,.12+Math.sin(performance.now()/500+o.x)*.08,o.z);o.g.rotation.y=o.dir>0?0:Math.PI}
+function extras(dt){ctx();wvT.offset.y+=dt*.03;for(const o of boats){o.z+=o.dir*o.sp*dt;if(o.z>o.zmax)o.dir=-1;if(o.z<30)o.dir=1;o.g.position.set(o.x,.12+Math.sin(performance.now()/500+o.x)*.08,o.z);o.g.rotation.y=o.dir>0?0:Math.PI}
  for(const o of helis){o.a+=o.sp*dt;o.g.position.set(224+Math.cos(o.a)*o.r,o.y,224+Math.sin(o.a)*o.r);o.g.rotation.y=-o.a;o.ro.rotation.y+=dt*30}}
+let trk=null,trkT=0,wasWeb=false,sitS=false,idleT=0,sitK=0,sayG=0;const SAYC={},SITQ=['Nice view up here.','Just taking in the city for a moment.','Quiet moment... enjoy it.','You still there? Take your time.','Best seat in New York.'];
+function startTrick(){if(trk||inRoom)return;const ty=Math.floor(Math.random()*4);trk={ty,t:0,d:[.75,.75,.85,.7][ty],s:Math.random()<.5?1:-1};sayOnce('trick',8,['Check this out!','Show-off time!','Ta-da!','Watch this!','Parkour!','Did you see that one?'])}
+function sayOnce(k,cd,arr){const n=performance.now();if(n<sayG||n<(SAYC[k]||0))return false;SAYC[k]=n+cd*1000;sayG=n+3500;hsay(pick(arr),2600);return true}
+function ctx(){if(mode!='play'||inRoom)return;const sp=v.length(),d2=(x,z)=>Math.hypot(p.x-x,p.z-z);
+ if(dive>.8)sayOnce('fall',12,['Aaaah! Okay, okay, I got this!','Falling with style!','Whoa whoa whoa!','Catch me... oh wait, that is me!']);
+ else if(sp>36)sayOnce('fast',25,['This is fast!','Wind in my mask!','Hold on tight, we are flying!','Faster, faster!']);
+ else if(p.y>110)sayOnce('high',45,['Look at that view! You see it too?','So high... best part of the job.']);
+ else if(p.y<.6&&p.x>40&&p.x<88)sayOnce('water',15,['Cold! Cold! Cold!','Not exactly a swimming day.']);
+ else if(d2(64,224)<45&&p.y<80)sayOnce('bridge',70,['Brooklyn Bridge, my favourite swing spot!','Nice cables. Perfect for swinging.']);
+ else if(d2(64,352)<50)sayOnce('statue',70,['Hey Lady Liberty!','Do not mind me, just passing by.']);
+ else if(d2(288,288)<40)sayOnce('ts',70,['Times Square, so bright!','So many billboards, so many tourists.']);
+ else if(d2(384,128)<45)sayOnce('stad',70,['Is there a game today?','Home run!']);
+ else if(helis.some(o=>o.g.position.distanceTo(p)<50))sayOnce('heli',40,['News chopper! Smile!','Hey, watch the rotors!']);
+ else if(WX.t.rain>.5)sayOnce('wet',70,['This rain keeps getting in my mask.','Rooftops are slippery, be careful.']);
+ else if(WX.t.snow>.5)sayOnce('cold',70,['Snow in the city, I love it.','My web fluid might freeze!']);
+ else if(hour>20||hour<5)sayOnce('night',90,['The city looks great at night.','Quiet night... too quiet.'])}
 // ---------- audio ----------
 let AC,windG,rainG;
 function audio(){try{AC=new(window.AudioContext||webkitAudioContext)();const b=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;s.loop=true;const f=AC.createBiquadFilter();f.frequency.value=700;windG=AC.createGain();windG.gain.value=0;s.connect(f);f.connect(windG);windG.connect(AC.destination);rainG=AC.createGain();rainG.gain.value=0;const f2=AC.createBiquadFilter();f2.type="highpass";f2.frequency.value=2500;s.connect(f2);f2.connect(rainG);rainG.connect(AC.destination);s.start()}catch(e){AC=null}}
 function snd(f1,f2,d,ty='sine',vol=.12){if(!AC||mute)return;const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=ty;o.frequency.setValueAtTime(f1,n);o.frequency.exponentialRampToValueAtTime(f2,n+d);g.gain.setValueAtTime(vol,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(n+d)}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const DL=['Nice weather today.','I’m late for work!','Need coffee...','Did you see the news?','Hot dogs, anyone?','Ugh, traffic.','Love this city.','Where’s my bus?'],NL=['It’s late...','Getting chilly.','Should head home.','Night shift again...'],FL=['Aaah!','Run!','Whoa, watch out!','Earthquake?!'],LK=['Look up!','Whoa!','Is that Spider-Man?!','Did you see that?','Amazing!','Cool suit!'],HQ=['With great power comes great responsibility.','Another day, another swing.','Hold on, New York!','I should call Aunt May later.','Is that a pigeon... or a drone?','Spidey-sense says pizza.','The city never sleeps, and neither do I.','Who needs a car when you have webs?','Not bad for a kid from Queens.','Gotta keep the city safe!','Just your friendly neighborhood Spider-Man!','My web-sense is tingling!','Nice view up here.','Traffic looks awful. Good thing I’m not in it.','Swing first, ask questions later.','Anyone order a Spider-Man?','Hope that rooftop is sturdy!'];
+const DL=['Nice weather today.','I’m late for work!','Need coffee...','Did you see the news?','Hot dogs, anyone?','Ugh, traffic.','Love this city.','Where’s my bus?'],NL=['It’s late...','Getting chilly.','Should head home.','Night shift again...'],FL=['Aaah!','Run!','Whoa, watch out!','Earthquake?!'],LK=['Look up!','Whoa!','Is that Spider-Man?!','Did you see that?','Amazing!','Cool suit!'],HQ=['Hey, you still with me? Let’s keep going!','Want to see something cool? Jump again in mid-air.','Stick with me, we got this.','Try the web-zip, it is addictive.','With great power comes great responsibility.','Another day, another swing.','Hold on, New York!','I should call Aunt May later.','Is that a pigeon... or a drone?','Spidey-sense says pizza.','The city never sleeps, and neither do I.','Who needs a car when you have webs?','Not bad for a kid from Queens.','Gotta keep the city safe!','Just your friendly neighborhood Spider-Man!','My web-sense is tingling!','Nice view up here.','Traffic looks awful. Good thing I’m not in it.','Swing first, ask questions later.','Anyone order a Spider-Man?','Hope that rooftop is sturdy!'];
 const bub=[];let hb=null;
 function say(g,h,t,ms,hr){if(!hr&&bub.length>(isMob()?4:9))return;const e=document.createElement('div');e.className='bb'+(hr?' hb':'');e.textContent=t;document.body.appendChild(e);const b={e,g,h,t:ms/1000,hr};bub.push(b);return b}
 function hsay(t,ms=1800){if(hb)hb.t=0;hb=say(hero,3,t,ms,1)}
@@ -263,7 +279,7 @@ function step(h){
  const fx=-Math.sin(yaw),fz=-Math.cos(yaw),[ix,iz]=axes();let dx=fx*iz+Math.cos(yaw)*ix,dz=fz*iz-Math.sin(yaw)*ix,dl=Math.hypot(dx,dz);if(dl>1){dx/=dl;dz/=dl;dl=1}else if(dl<.12){dx=dz=dl=0}
  const sh=K.ShiftLeft||K.ShiftRight;const cl=wallF&&!web;wallF=0;if(cl&&!onW)hsay(pick(['Wall-crawling time!','Sticky fingers!','Up we go!','Don’t look down.']),1500);onW=cl;
  cool-=h;if(fr.web){fr.web=0;if(!web){const a=findAnchor();if(a){if(grounded){v.y=8;grounded=false}att(a)}}}if(K.KeyE&&!web&&!grounded&&anchorC&&cool<=0)att(anchorC);
- coy=grounded?.12:Math.max(0,coy-h);if(fr.jump>0){fr.jump-=h;if(web){fr.jump=0;release();v.y+=7;snd(300,600,.1)}else if(onW){fr.jump=0;v.set(wnx*8,10,wnz*8);onW=false;snd(300,600,.1)}else if(grounded||coy>0){fr.jump=0;coy=0;v.y=12.5;grounded=false;snd(250,500,.1)}}
+ coy=grounded?.12:Math.max(0,coy-h);if(fr.jump>0){fr.jump-=h;if(web){fr.jump=0;release();v.y+=7;snd(300,600,.1)}else if(onW){fr.jump=0;v.set(wnx*8,10,wnz*8);onW=false;snd(300,600,.1)}else if(grounded||coy>0){fr.jump=0;coy=0;v.y=12.5;grounded=false;snd(250,500,.1)}else if(!grounded&&!zip&&airT>.2){fr.jump=0;startTrick()}}
  if(zip){zip.T+=h;_t.copy(zip.t).sub(_o.set(p.x,p.y+1.3,p.z));const zd=_t.length();if(zd<3.5||zip.T>1.3){v.y=Math.max(v.y,7);v.x*=.8;v.z*=.8;zip=null;webL.visible=false;zipCD=performance.now()+600}else{_t.divideScalar(zd);v.copy(_t).multiplyScalar(40)}}
  else if(web){v.x+=dx*10*h;v.z+=dz*10*h;if(sh)v.y-=16*h;if(pull>0){pull-=h;_t.copy(web).sub(_o.set(p.x,p.y+1.3,p.z));const dd=_t.length();_t.divideScalar(dd);v.addScaledVector(_t,32*h);L=Math.min(L,dd)}else L=Math.max(12,L-3*h);if(K.KeyZ)L=Math.max(8,L-20*h);if(K.KeyX)L=Math.min(110,L+20*h);
   if(dl>0){const s=Math.hypot(v.x,v.y,v.z);if(s>1){const k=1.2*h/s;v.x+=v.x*k;v.y+=v.y*k*.3;v.z+=v.z*k}}}
@@ -345,18 +361,25 @@ let bn=null,rHand=null,pAir=false,landT=0,dive=0;
 function aim(b,d){b.updateWorldMatrix(true,false);b.getWorldQuaternion(_q1);_v1.set(0,1,0).applyQuaternion(_q1);_q2.setFromUnitVectors(_v1,_v2.copy(d).normalize()).multiply(_q1);b.parent.getWorldQuaternion(_q1);b.quaternion.copy(_q1.invert().multiply(_q2));b.updateMatrixWorld(true)}
 function pose(b,l,u,f){D.set(0,0,0).addScaledVector(LV,l).addScaledVector(Y,u).addScaledVector(F,f);aim(b,D)}
 function frame3(){F.set(Math.sin(heading),0,Math.cos(heading));bn.la.getWorldPosition(_v1);bn.ra.getWorldPosition(_v2);LV.copy(_v1).sub(_v2).normalize()}
-function mixUpd(dt,hs){airT=(!grounded&&!web&&!onW)?airT+dt:0;const air=airT>.12||(!grounded&&!web&&!onW&&v.y>3),J=acts.Jump;
+function mixUpd(dt,hs){airT=(!grounded&&!web&&!onW&&!zip)?airT+dt:0;const air=airT>.12||(!grounded&&!web&&!onW&&v.y>3),J=acts.Jump;
  if(air&&!pAir&&J){J.reset();J.time=v.y>3?.48:.95;J.timeScale=1.3;J.fadeIn(.08).play();if(cur&&cur!==J)cur.fadeOut(.08);cur=J}
  if(!air&&pAir&&J&&cur===J&&!web&&!onW){J.time=Math.max(J.time,1.08);J.timeScale=1.5;landT=hs>4?.05:.4}
  pAir=air;if(air&&cur===J&&J.time>1.02){J.time=1.02;J.timeScale=0}
  if(landT>0&&grounded)landT-=dt;
  if(!air){let n=null,ts=1;if(onW){n='Idle'}else if(web){n='Idle'}else if(landT<=0){n=hs>.5?'Run':'Idle';if(hs>.5)ts=Math.max(.6,Math.min(1.8,hs/6))}if(n)play(n,ts)}
- mix.update(dt);body.rotation.z=0;const fall=air&&!web&&!onW&&v.y<-9;dive+=((fall?1:0)-dive)*Math.min(1,(fall?6:12)*dt);body.rotation.x=onW?0:air?.1+dive*2.5:0;body.position.set(0,.9*(1-Math.cos(dive*2.5)),-.9*Math.sin(dive*2.5));
+ mix.update(dt);body.rotation.z=0;const fall=air&&!web&&!onW&&!trk&&v.y<-12;dive+=((fall?1:0)-dive)*Math.min(1,(fall?6:12)*dt);
+const idl=grounded&&!web&&!onW&&!zip&&hs<.6&&Math.hypot(...axes())<.15&&p.y>6&&mode=='play'&&!inRoom;idleT=idl?idleT+dt:0;const sit=idleT>4;sitK+=((sit?1:0)-sitK)*Math.min(1,6*dt);if(sit&&!sitS){sitS=true;hsay(pick(SITQ),3000)}if(!sit)sitS=false;
+if(wasWeb&&!web&&air&&v.length()>12)startTrick();wasWeb=!!web;
+if(air&&!web&&!zip&&!trk&&!fall&&airT>.5&&p.y>10){trkT-=dt;if(trkT<=0){trkT=1.5+Math.random()*2.5;if(Math.random()<.6)startTrick()}}
+let rx=onW?0:air?.1+dive*1.25:sitK*.45,ry=0,rz=0;
+if(trk){trk.t+=dt;const k=Math.min(1,trk.t/trk.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,A=Math.PI*2*e;if(trk.ty==0)rx=A;else if(trk.ty==1)rx=-A;else if(trk.ty==2)rz=A*trk.s;else ry=A*2*trk.s;if(k>=1||!air||web||onW)trk=null}
+body.rotation.set(rx,ry,rz);_t.set(0,.9,0).applyEuler(body.rotation);body.position.set(-_t.x,.9-_t.y-.5*sitK,-_t.z);
  if(web&&bn){const r=_v4.copy(web).sub(_v3.set(p.x,p.y+1.3,p.z)).normalize(),hx=Math.sin(heading),hz=Math.cos(heading),rf=r.x*hx+r.z*hz,rl=r.x*hz-r.z*hx;
   body.rotation.x=Math.max(-.9,Math.min(.9,Math.atan2(rf,r.y)*.7));body.rotation.z=-Math.max(-.5,Math.min(.5,Math.atan2(rl,r.y)*.5));hero.updateMatrixWorld(true);frame3();
   aim(bn.ra,r);aim(bn.rf,r);pose(bn.la,.7,-.5,.25);pose(bn.lf,.2,-.3,.9);pose(bn.lu,.1,-.9,-.3);pose(bn.ll,0,-.5,-.85);pose(bn.ru,-.1,-.8,.15);pose(bn.rl,0,-.9,-.4)}
  else if(onW&&bn){hero.updateMatrixWorld(true);frame3();const s=Math.sin(ph);const a=Math.max(0,s),b=Math.max(0,-s);pose(bn.ra,-.5,.7+.5*a,.4);pose(bn.rf,-.35,.9+.3*a,.3);pose(bn.la,.5,.7+.5*b,.4);pose(bn.lf,.35,.9+.3*b,.3);pose(bn.lu,.6,-.35+.55*a,.35);pose(bn.ll,.35,-.85,.15);pose(bn.ru,-.6,-.35+.55*b,.35);pose(bn.rl,-.35,-.85,.15)}
- else if(dive>.45&&bn){hero.updateMatrixWorld(true);frame3();pose(bn.ra,-.3,-.75,.6);pose(bn.rf,-.3,-.75,.6);pose(bn.la,.3,-.75,.6);pose(bn.lf,.3,-.75,.6);pose(bn.lu,.15,.8,-.6);pose(bn.ll,.1,.8,-.6);pose(bn.ru,-.15,.8,-.6);pose(bn.rl,-.1,.8,-.6)}}
+ else if(dive>.45&&bn&&!trk){hero.updateMatrixWorld(true);frame3();pose(bn.ra,-1,.15,.25);pose(bn.rf,-1,.1,.2);pose(bn.la,1,.15,.25);pose(bn.lf,1,.1,.2);pose(bn.lu,.4,.1,-.9);pose(bn.ll,.35,.05,-.9);pose(bn.ru,-.4,.1,-.9);pose(bn.rl,-.35,.05,-.9)}
+ else if(sitK>.5&&!trk&&bn){hero.updateMatrixWorld(true);frame3();pose(bn.ra,-.3,-.8,.4);pose(bn.rf,-.2,-.3,.9);pose(bn.la,.3,-.8,.4);pose(bn.lf,.2,-.3,.9);pose(bn.lu,.4,-.15,.9);pose(bn.ll,.3,-1,-.15);pose(bn.ru,-.4,-.15,.9);pose(bn.rl,-.3,-1,-.15)}}
 // ---------- loop ----------
 let last=performance.now(),acc=0,tr=[null,0];
 function frame(n){requestAnimationFrame(frame);const dt=Math.min((n-last)/1000,.1);last=n;
@@ -365,7 +388,7 @@ function frame(n){requestAnimationFrame(frame);const dt=Math.min((n-last)/1000,.
  if(mode=='play'){qT-=dt;if(qT<0){qT=12+Math.random()*10;hsay(pick(WX.t.q&&Math.random()<.5?WX.t.q:HQ),2500)}}
  if(inRoom&&mode=='play'&&(p.z>RZ1+.3||p.y<RY-.5)){inRoom=false;toast('NOW WEB SWING!  Hold E / tap WEB SWING in mid-air  ·  Q / ZIP to zip up');hsay('Here we go!',1800)}anim(dt);camUpd(dt);env();wxPost(dt);extras(dt);hud(dt,tr);bubs(dt);R.render(S,cam)}
 // ---------- input / menus ----------
-const HELP='PC: WASD move · SHIFT sprint · SPACE jump · hold E swing · Q web-zip · 1-8 weather · arrows or mouse for camera (click the game to capture the mouse). Mobile: joystick move · drag screen to look · buttons for jump, swing, zip, sprint and wall crawl.';
+const HELP='PC: WASD move · SHIFT sprint · SPACE jump · hold E swing · Q web-zip · jump in mid-air = trick · 1-8 weather · arrows or mouse for camera (click the game to capture the mouse). Mobile: joystick move · drag screen to look · buttons for jump, swing, zip, sprint and wall crawl.';
 function ov(t){const o=$('ov');o.style.display=t?'flex':'none';if(t)$('ovt').innerHTML=t}
 function pauseT(){if(mode=='play'){mode='pause';ov('<b>PAUSED</b><br>'+HELP+'<br>ENTER resume · BACKSPACE checkpoint · G graphics ('+['Low','Medium','High'][qi]+') · M mute')}else if(mode=='pause'){mode='play';ov('')}}
 function enableMobileImmersive(){
